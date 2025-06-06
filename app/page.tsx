@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold">PDAM Management System</CardTitle>
@@ -18,23 +18,24 @@ export default function Home() {
               Welcome! Please choose an option to continue:
             </div>
             
-            <div className="space-y-3">
-              <Button asChild className="w-full">
-                <Link href="/login">
+            <div className="space-y-4">
+              <Button asChild className="w-full h-11">
+                <Link href="/login" prefetch={true}>
                   Sign In to Your Account
                 </Link>
               </Button>
               
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/register">
+              <Button asChild variant="outline" className="w-full h-11">
+                <Link href="/register" prefetch={true}>
                   Create New Account
                 </Link>
               </Button>
               
-              <div className="text-center">
+              <div className="text-center pt-2">
                 <Link
                   href="/forgot-password"
                   className="text-sm text-primary hover:underline"
+                  prefetch={true}
                 >
                   Forgot your password?
                 </Link>

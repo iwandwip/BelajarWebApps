@@ -44,8 +44,8 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
             <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
@@ -55,9 +55,10 @@ export function LoginForm() {
               value={formData.email}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
@@ -67,24 +68,26 @@ export function LoginForm() {
               value={formData.password}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
-          <div className="text-right">
+          <div className="text-right pt-2">
             <Link
               href="/forgot-password"
               className="text-sm text-primary hover:underline"
+              prefetch={true}
             >
               Forgot password?
             </Link>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full">
+        <CardFooter className="flex flex-col space-y-6 pt-6">
+          <Button type="submit" className="w-full h-11">
             Sign In
           </Button>
-          <div className="text-center text-sm">
+          <div className="text-center text-sm pt-2">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline">
+            <Link href="/register" className="text-primary hover:underline" prefetch={true}>
               Sign up
             </Link>
           </div>

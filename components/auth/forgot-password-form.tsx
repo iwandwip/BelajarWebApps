@@ -42,17 +42,17 @@ export function ForgotPasswordForm() {
             If you don&apos;t see the email, check your spam folder.
           </p>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
+        <CardFooter className="flex flex-col space-y-6 pt-6">
           <Button 
             onClick={() => setIsSubmitted(false)} 
             variant="outline" 
-            className="w-full"
+            className="w-full h-11"
           >
             Try Another Email
           </Button>
-          <div className="text-center text-sm">
+          <div className="text-center text-sm pt-2">
             Remember your password?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary hover:underline" prefetch={true}>
               Back to login
             </Link>
           </div>
@@ -79,8 +79,8 @@ export function ForgotPasswordForm() {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
             <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
@@ -90,16 +90,17 @@ export function ForgotPasswordForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="h-11"
             />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full">
+        <CardFooter className="flex flex-col space-y-6 pt-6">
+          <Button type="submit" className="w-full h-11">
             Send Reset Link
           </Button>
-          <div className="text-center text-sm">
+          <div className="text-center text-sm pt-2">
             Remember your password?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary hover:underline" prefetch={true}>
               Back to login
             </Link>
           </div>

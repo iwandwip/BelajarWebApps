@@ -20,10 +20,17 @@ export function RegisterForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (formData.password.length < 6) {
+      alert("Password must be at least 6 characters long!")
+      return
+    }
+    
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!")
       return
     }
+    
     console.log("Register attempt:", formData)
   }
 
@@ -52,8 +59,8 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+        <CardContent className="space-y-5">
+          <div className="space-y-3">
             <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
@@ -63,9 +70,10 @@ export function RegisterForm() {
               value={formData.fullName}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
@@ -75,9 +83,10 @@ export function RegisterForm() {
               value={formData.email}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label htmlFor="phone">Phone Number</Label>
             <Input
               id="phone"
@@ -87,9 +96,10 @@ export function RegisterForm() {
               value={formData.phone}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label htmlFor="address">Address</Label>
             <Input
               id="address"
@@ -99,9 +109,10 @@ export function RegisterForm() {
               value={formData.address}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
@@ -111,9 +122,11 @@ export function RegisterForm() {
               value={formData.password}
               onChange={handleChange}
               required
+              className="h-11"
+              minLength={6}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
@@ -123,16 +136,18 @@ export function RegisterForm() {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
+              className="h-11"
+              minLength={6}
             />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full">
+        <CardFooter className="flex flex-col space-y-6 pt-6">
+          <Button type="submit" className="w-full h-11">
             Create Account
           </Button>
-          <div className="text-center text-sm">
+          <div className="text-center text-sm pt-2">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary hover:underline" prefetch={true}>
               Sign in
             </Link>
           </div>
