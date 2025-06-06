@@ -40,8 +40,7 @@ export function SignInForm() {
         setError("Invalid credentials or account pending approval")
       } else if (result?.ok) {
         const callbackUrl = searchParams.get("callbackUrl")
-        router.push(callbackUrl || "/dashboard")
-        router.refresh()
+        window.location.href = callbackUrl || "/"
       }
     } catch (error) {
       setError("An unexpected error occurred")
