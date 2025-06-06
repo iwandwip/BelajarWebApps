@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { SignOutButton } from "@/components/auth/signout-button"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { USER_ROLES, USER_STATUS } from "@/lib/constants"
 import Link from "next/link"
 import { 
   LayoutDashboard, 
@@ -32,7 +33,7 @@ export default function CustomerLayout({
     )
   }
 
-  if (!session || session.user.role !== "CUSTOMER" || session.user.status !== "ACTIVE") {
+  if (!session || session.user.role !== USER_ROLES.CUSTOMER || session.user.status !== USER_STATUS.ACTIVE) {
     redirect("/signin")
   }
 

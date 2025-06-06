@@ -1,4 +1,8 @@
-# NextAuth Setup Instructions
+# NextAuth Setup Instructions - SQLite Compatible
+
+## 🐛 **Issue Fixed: SQLite Enum Support**
+
+SQLite doesn't support native enums, so we've converted all enums to String types with constants for type safety.
 
 ## 📋 **Required Dependencies Installation**
 
@@ -22,30 +26,36 @@ mkdir -p types
 ## 📁 **Files Created/Modified**
 
 ### **Core NextAuth Files:**
-1. ✅ `lib/auth-config.ts` - NextAuth configuration
+1. ✅ `lib/auth-config.ts` - NextAuth configuration (updated for constants)
 2. ✅ `app/api/auth/[...nextauth]/route.ts` - NextAuth API route
-3. ✅ `middleware.ts` - Route protection
+3. ✅ `middleware.ts` - Route protection (updated for constants)
 4. ✅ `app/providers.tsx` - Session provider wrapper
 5. ✅ `app/layout.tsx` - Updated with providers
 
+### **Database Schema Changes:**
+6. ✅ `prisma/schema.prisma` - **FIXED: Converted enums to String**
+7. ✅ `lib/constants.ts` - **NEW: Type-safe constants replacing enums**
+8. ✅ `lib/db-utils.ts` - Updated to use constants
+9. ✅ `prisma/seed.ts` - Updated to use constants
+
 ### **Authentication API:**
-6. ✅ `app/api/auth/register/route.ts` - Custom registration API
+10. ✅ `app/api/auth/register/route.ts` - Custom registration API (updated)
 
 ### **Pages & Components:**
-7. ✅ `app/(auth)/signin/page.tsx` - Custom signin page
-8. ✅ `components/auth/signin-form.tsx` - Updated login form
-9. ✅ `components/auth/register-form.tsx` - Updated register form
-10. ✅ `components/auth/signout-button.tsx` - Logout component
+11. ✅ `app/(auth)/signin/page.tsx` - Custom signin page
+12. ✅ `components/auth/signin-form.tsx` - Updated login form
+13. ✅ `components/auth/register-form.tsx` - Updated register form
+14. ✅ `components/auth/signout-button.tsx` - Logout component
 
 ### **Protected Dashboards:**
-11. ✅ `app/admin/layout.tsx` - Admin layout with auth
-12. ✅ `app/admin/dashboard/page.tsx` - Admin dashboard
-13. ✅ `app/customer/layout.tsx` - Customer layout with auth
-14. ✅ `app/customer/dashboard/page.tsx` - Customer dashboard
+15. ✅ `app/admin/layout.tsx` - Admin layout (updated for constants)
+16. ✅ `app/admin/dashboard/page.tsx` - Admin dashboard
+17. ✅ `app/customer/layout.tsx` - Customer layout (updated for constants)
+18. ✅ `app/customer/dashboard/page.tsx` - Customer dashboard
 
 ### **Types & Utilities:**
-15. ✅ `types/auth.ts` - NextAuth type declarations
-16. ✅ `package.json` - Updated dependencies
+19. ✅ `types/auth.ts` - NextAuth type declarations
+20. ✅ `package.json` - Updated dependencies
 
 ## 🚀 **Setup Commands**
 
@@ -57,11 +67,66 @@ npm install next-auth @auth/prisma-adapter zod
 # 2. Install missing ShadCN components
 npx shadcn@latest add alert checkbox badge progress
 
-# 3. Generate Prisma client (if not done yet)
+# 3. Setup database with updated schema
 npm run db:setup
 
 # 4. Start development server
 npm run dev
+```
+
+## 🔧 **Key Changes Made**
+
+### **Database Schema Changes:**
+```diff
+- enum Role { ADMIN, CUSTOMER }
++ role String @default("CUSTOMER")
+
+- enum UserStatus { PENDING, ACTIVE, INACTIVE }  
++ status String @default("PENDING")
+
+- enum NodeType { DISTRIBUTOR, CUSTOMER }
++ nodeType String
+
+- enum SensorType { FLOW_METER, PRESSURE }
++ sensorType String
+
+- enum PaymentStatus { PENDING, COMPLETED, REJECTED }
++ status String @default("PENDING")
+
+- enum LeakSeverity { LOW, MEDIUM, HIGH }
++ severity String
+
+- enum LeakStatus { DETECTED, RESOLVED, FALSE_ALARM }
++ status String @default("DETECTED")
+```
+
+### **Constants for Type Safety:**
+```typescript
+// lib/constants.ts
+export const USER_ROLES = {
+  ADMIN: 'ADMIN',
+  CUSTOMER: 'CUSTOMER'
+} as const
+
+export const USER_STATUS = {
+  PENDING: 'PENDING', 
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE'
+} as const
+
+// TypeScript types derived from constants
+export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
+export type UserStatus = typeof USER_STATUS[keyof typeof USER_STATUS]
+```
+
+### **Usage in Code:**
+```typescript
+// Before (with enums)
+if (user.role !== Role.ADMIN) { ... }
+
+// After (with constants)
+import { USER_ROLES } from '@/lib/constants'
+if (user.role !== USER_ROLES.ADMIN) { ... }
 ```
 
 ## 🔐 **Test Accounts**
@@ -112,6 +177,12 @@ npm run dev
 ```
 
 ## ✨ **Features Implemented**
+
+### ✅ **Database Compatibility:**
+- **SQLite compatible** - No more enum errors
+- **Type safety maintained** - Using constants with TypeScript types
+- **All relationships working** - Foreign keys and relations intact
+- **Seed data updated** - Uses new constant values
 
 ### ✅ **Authentication:**
 - Login with email/password
@@ -170,6 +241,29 @@ npm run dev
 
 4. **Route protection not working:**
    - Ensure middleware.ts is in project root
-   - Check user role/status in database
+   - Check user role/status in database using constants
 
-Authentication system is now fully integrated and ready for development! 🎉
+5. **Enum errors (FIXED):**
+   - All enums converted to String with constants
+   - SQLite now fully compatible
+   - Type safety maintained through TypeScript
+
+## ✅ **Verification Steps**
+
+After setup, verify everything works:
+
+```bash
+# 1. Check database schema
+npm run db:studio
+
+# 2. Test authentication
+# - Register new user → should be PENDING
+# - Login as admin → should redirect to /admin/dashboard  
+# - Login as customer → should redirect to /customer/dashboard
+
+# 3. Test route protection
+# - Try accessing /admin without login → should redirect to /signin
+# - Try accessing /customer without login → should redirect to /signin
+```
+
+Authentication system is now **fully compatible with SQLite** and ready for development! 🎉

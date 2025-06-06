@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { SignOutButton } from "@/components/auth/signout-button"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { USER_ROLES } from "@/lib/constants"
 import Link from "next/link"
 import { 
   LayoutDashboard, 
@@ -33,7 +33,7 @@ export default function AdminLayout({
     )
   }
 
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session || session.user.role !== USER_ROLES.ADMIN) {
     redirect("/signin")
   }
 

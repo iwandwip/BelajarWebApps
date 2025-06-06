@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "./db"
 import { verifyPassword } from "./db-utils"
+import { USER_STATUS } from "./constants"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -33,7 +34,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        if (user.status !== 'ACTIVE') {
+        if (user.status !== USER_STATUS.ACTIVE) {
           throw new Error('Account pending approval or inactive')
         }
 

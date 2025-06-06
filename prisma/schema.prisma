@@ -12,109 +12,109 @@ model User {
   email      String    @unique
   password   String
   name       String
-  role       Role      @default(CUSTOMER)
-  status     UserStatus @default(PENDING)
+  role       String    @default("CUSTOMER")
+  status     String    @default("PENDING")
   createdAt  DateTime  @default(now())
   approvedAt DateTime?
   approvedBy String?
-  
+
   customer         Customer?
-  approvedUsers    User[]           @relation("UserApproval")
-  approver         User?            @relation("UserApproval", fields: [approvedBy], references: [id])
-  approvedPayments Payment[]        @relation("PaymentApprover")
-  resolvedLeaks    LeakDetection[]  @relation("LeakResolver")
-  systemSettings   SystemSetting[]  @relation("SettingUpdater")
-  
+  approvedUsers    User[]          @relation("UserApproval")
+  approver         User?           @relation("UserApproval", fields: [approvedBy], references: [id])
+  approvedPayments Payment[]       @relation("PaymentApprover")
+  resolvedLeaks    LeakDetection[] @relation("LeakResolver")
+  systemSettings   SystemSetting[] @relation("SettingUpdater")
+
   @@map("users")
 }
 
 model Customer {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  customerNo  String?   @unique
-  address     String
-  phone       String?
-  waterQuota  Float     @default(0.0)
-  isActive    Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  node        Node?
-  sensorData  SensorData[]
-  payments    Payment[]
-  
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  customerNo String?  @unique
+  address    String
+  phone      String?
+  waterQuota Float    @default(0.0)
+  isActive   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  node       Node?
+  sensorData SensorData[]
+  payments   Payment[]
+
   @@map("customers")
 }
 
 model Node {
   id         String    @id @default(cuid())
   nodeId     String    @unique
-  nodeType   NodeType
+  nodeType   String
   location   String
   customerId String?   @unique
   isOnline   Boolean   @default(false)
   lastSeen   DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-  
-  customer   Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  customer   Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
   sensorData SensorData[]
-  
+
   @@map("nodes")
 }
 
 model SensorData {
-  id          String     @id @default(cuid())
+  id          String   @id @default(cuid())
   nodeId      String
   customerId  String?
-  sensorType  SensorType
-  sensorIndex Int        @default(1)
+  sensorType  String
+  sensorIndex Int      @default(1)
   value       Float
   unit        String
-  timestamp   DateTime   @default(now())
-  
-  node        Node       @relation(fields: [nodeId], references: [id], onDelete: Cascade)
-  customer    Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  
+  timestamp   DateTime @default(now())
+
+  node     Node      @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
   @@map("sensor_data")
 }
 
 model Payment {
-  id              String        @id @default(cuid())
-  customerId      String
-  amount          Float
-  quotaRequested  Float
-  quotaAdded      Float         @default(0.0)
-  method          String
-  status          PaymentStatus @default(PENDING)
-  createdAt       DateTime      @default(now())
-  approvedAt      DateTime?
-  approvedBy      String?
-  
-  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  approver        User?         @relation("PaymentApprover", fields: [approvedBy], references: [id])
-  
+  id             String    @id @default(cuid())
+  customerId     String
+  amount         Float
+  quotaRequested Float
+  quotaAdded     Float     @default(0.0)
+  method         String
+  status         String    @default("PENDING")
+  createdAt      DateTime  @default(now())
+  approvedAt     DateTime?
+  approvedBy     String?
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  approver User?    @relation("PaymentApprover", fields: [approvedBy], references: [id])
+
   @@map("payments")
 }
 
 model LeakDetection {
-  id                     String           @id @default(cuid())
-  detectionTime          DateTime         @default(now())
-  location               String
-  severity               LeakSeverity
-  distributorFlow        Float
-  customerTotalFlow      Float
-  flowDifference         Float
-  distributorPressure    Float
-  customerAvgPressure    Float
-  pressureDifference     Float
-  status                 LeakStatus       @default(DETECTED)
-  resolvedAt             DateTime?
-  resolvedBy             String?
-  
-  resolver               User?            @relation("LeakResolver", fields: [resolvedBy], references: [id])
-  
+  id                  String    @id @default(cuid())
+  detectionTime       DateTime  @default(now())
+  location            String
+  severity            String
+  distributorFlow     Float
+  customerTotalFlow   Float
+  flowDifference      Float
+  distributorPressure Float
+  customerAvgPressure Float
+  pressureDifference  Float
+  status              String    @default("DETECTED")
+  resolvedAt          DateTime?
+  resolvedBy          String?
+
+  resolver User? @relation("LeakResolver", fields: [resolvedBy], references: [id])
+
   @@map("leak_detection")
 }
 
@@ -125,47 +125,8 @@ model SystemSetting {
   description  String
   updatedBy    String
   updatedAt    DateTime @updatedAt
-  
-  updater      User     @relation("SettingUpdater", fields: [updatedBy], references: [id])
-  
+
+  updater User @relation("SettingUpdater", fields: [updatedBy], references: [id])
+
   @@map("system_settings")
-}
-
-enum Role {
-  ADMIN
-  CUSTOMER
-}
-
-enum UserStatus {
-  PENDING
-  ACTIVE
-  INACTIVE
-}
-
-enum NodeType {
-  DISTRIBUTOR
-  CUSTOMER
-}
-
-enum SensorType {
-  FLOW_METER
-  PRESSURE
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  REJECTED
-}
-
-enum LeakSeverity {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-enum LeakStatus {
-  DETECTED
-  RESOLVED
-  FALSE_ALARM
 }

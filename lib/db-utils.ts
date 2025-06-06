@@ -1,4 +1,5 @@
 import { prisma } from './db'
+import { USER_STATUS, USER_ROLES, PAYMENT_STATUS, LEAK_STATUS } from './constants'
 import bcrypt from 'bcryptjs'
 
 export async function hashPassword(password: string): Promise<string> {
@@ -66,8 +67,8 @@ export async function updateSystemSetting(key: string, value: string, updatedBy:
 export async function getPendingUsers() {
   return prisma.user.findMany({
     where: { 
-      status: 'PENDING',
-      role: 'CUSTOMER',
+      status: USER_STATUS.PENDING,
+      role: USER_ROLES.CUSTOMER,
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -75,7 +76,7 @@ export async function getPendingUsers() {
 
 export async function getPendingPayments() {
   return prisma.payment.findMany({
-    where: { status: 'PENDING' },
+    where: { status: PAYMENT_STATUS.PENDING },
     include: {
       customer: {
         include: {
@@ -89,7 +90,7 @@ export async function getPendingPayments() {
 
 export async function getActiveLeaks() {
   return prisma.leakDetection.findMany({
-    where: { status: 'DETECTED' },
+    where: { status: LEAK_STATUS.DETECTED },
     orderBy: { detectionTime: 'desc' },
   })
 }

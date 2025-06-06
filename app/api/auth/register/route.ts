@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { hashPassword } from '@/lib/db-utils'
+import { USER_ROLES, USER_STATUS } from '@/lib/constants'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -38,8 +39,8 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         password: hashedPassword,
         name: validatedData.fullName,
-        role: 'CUSTOMER',
-        status: 'PENDING'
+        role: USER_ROLES.CUSTOMER,
+        status: USER_STATUS.PENDING
       }
     })
 

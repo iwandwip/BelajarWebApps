@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { USER_ROLES, USER_STATUS, NODE_TYPES, SENSOR_TYPES } from '../lib/constants'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -14,8 +15,8 @@ async function main() {
       email: 'admin@pdam.com',
       password: adminPassword,
       name: 'PDAM Administrator',
-      role: 'ADMIN',
-      status: 'ACTIVE',
+      role: USER_ROLES.ADMIN,
+      status: USER_STATUS.ACTIVE,
       approvedAt: new Date(),
     },
   })
@@ -27,8 +28,8 @@ async function main() {
       email: 'budi@gmail.com',
       password: customerPassword,
       name: 'Budi Santoso',
-      role: 'CUSTOMER',
-      status: 'ACTIVE',
+      role: USER_ROLES.CUSTOMER,
+      status: USER_STATUS.ACTIVE,
       approvedAt: new Date(),
       approvedBy: admin.id,
     },
@@ -41,8 +42,8 @@ async function main() {
       email: 'sari@gmail.com',
       password: customerPassword,
       name: 'Sari Dewi',
-      role: 'CUSTOMER',
-      status: 'ACTIVE',
+      role: USER_ROLES.CUSTOMER,
+      status: USER_STATUS.ACTIVE,
       approvedAt: new Date(),
       approvedBy: admin.id,
     },
@@ -79,7 +80,7 @@ async function main() {
     update: {},
     create: {
       nodeId: 'DIST-001',
-      nodeType: 'DISTRIBUTOR',
+      nodeType: NODE_TYPES.DISTRIBUTOR,
       location: 'Main Distribution Pipe - Central',
       isOnline: true,
       lastSeen: new Date(),
@@ -91,7 +92,7 @@ async function main() {
     update: {},
     create: {
       nodeId: 'USER-001',
-      nodeType: 'CUSTOMER',
+      nodeType: NODE_TYPES.CUSTOMER,
       location: 'Customer PDAM-001 House',
       customerId: customerData1.id,
       isOnline: true,
@@ -104,7 +105,7 @@ async function main() {
     update: {},
     create: {
       nodeId: 'USER-002',
-      nodeType: 'CUSTOMER',
+      nodeType: NODE_TYPES.CUSTOMER,
       location: 'Customer PDAM-002 House',
       customerId: customerData2.id,
       isOnline: true,
@@ -150,7 +151,7 @@ async function main() {
   const sampleSensorData = [
     {
       nodeId: distributorNode.id,
-      sensorType: 'FLOW_METER' as const,
+      sensorType: SENSOR_TYPES.FLOW_METER,
       sensorIndex: 1,
       value: 15.5,
       unit: 'L/min',
@@ -158,7 +159,7 @@ async function main() {
     },
     {
       nodeId: distributorNode.id,
-      sensorType: 'FLOW_METER' as const,
+      sensorType: SENSOR_TYPES.FLOW_METER,
       sensorIndex: 2,
       value: 12.3,
       unit: 'L/min',
@@ -166,7 +167,7 @@ async function main() {
     },
     {
       nodeId: distributorNode.id,
-      sensorType: 'PRESSURE' as const,
+      sensorType: SENSOR_TYPES.PRESSURE,
       sensorIndex: 1,
       value: 2.5,
       unit: 'Bar',
@@ -175,7 +176,7 @@ async function main() {
     {
       nodeId: customerNode1.id,
       customerId: customerData1.id,
-      sensorType: 'FLOW_METER' as const,
+      sensorType: SENSOR_TYPES.FLOW_METER,
       sensorIndex: 1,
       value: 14.8,
       unit: 'L/min',
@@ -184,7 +185,7 @@ async function main() {
     {
       nodeId: customerNode1.id,
       customerId: customerData1.id,
-      sensorType: 'PRESSURE' as const,
+      sensorType: SENSOR_TYPES.PRESSURE,
       sensorIndex: 1,
       value: 2.2,
       unit: 'Bar',
@@ -193,7 +194,7 @@ async function main() {
     {
       nodeId: customerNode2.id,
       customerId: customerData2.id,
-      sensorType: 'FLOW_METER' as const,
+      sensorType: SENSOR_TYPES.FLOW_METER,
       sensorIndex: 1,
       value: 11.9,
       unit: 'L/min',
@@ -202,7 +203,7 @@ async function main() {
     {
       nodeId: customerNode2.id,
       customerId: customerData2.id,
-      sensorType: 'PRESSURE' as const,
+      sensorType: SENSOR_TYPES.PRESSURE,
       sensorIndex: 1,
       value: 2.1,
       unit: 'Bar',
