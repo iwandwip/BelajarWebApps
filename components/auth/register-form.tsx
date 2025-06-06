@@ -5,10 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import Image from "next/image"
 
 export function RegisterForm() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -18,20 +22,53 @@ export function RegisterForm() {
     confirmPassword: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    setIsLoading(true)
+    setError("")
+    setSuccess("")
+
     if (formData.password.length < 6) {
-      alert("Password must be at least 6 characters long!")
+      setError("Password must be at least 6 characters long!")
+      setIsLoading(false)
       return
     }
     
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!")
+      setError("Passwords do not match!")
+      setIsLoading(false)
       return
     }
-    
-    console.log("Register attempt:", formData)
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSuccess(data.message)
+        setFormData({
+          fullName: "",
+          email: "",
+          phone: "",
+          address: "",
+          password: "",
+          confirmPassword: "",
+        })
+      } else {
+        setError(data.error || 'Registration failed')
+      }
+    } catch (error) {
+      setError('An unexpected error occurred')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +97,18 @@ export function RegisterForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-5">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {success && (
+            <Alert>
+              <AlertDescription className="text-green-600">{success}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-3">
             <Label htmlFor="fullName">Full Name</Label>
             <Input
@@ -71,6 +120,7 @@ export function RegisterForm() {
               onChange={handleChange}
               required
               className="h-11"
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-3">
@@ -84,6 +134,7 @@ export function RegisterForm() {
               onChange={handleChange}
               required
               className="h-11"
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-3">
@@ -97,6 +148,7 @@ export function RegisterForm() {
               onChange={handleChange}
               required
               className="h-11"
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-3">
@@ -110,6 +162,7 @@ export function RegisterForm() {
               onChange={handleChange}
               required
               className="h-11"
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-3">
@@ -124,6 +177,7 @@ export function RegisterForm() {
               required
               className="h-11"
               minLength={6}
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-3">
@@ -138,16 +192,17 @@ export function RegisterForm() {
               required
               className="h-11"
               minLength={6}
+              disabled={isLoading}
             />
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-6 pt-6">
-          <Button type="submit" className="w-full h-11">
-            Create Account
+          <Button type="submit" className="w-full h-11" disabled={isLoading}>
+            {isLoading ? "Creating Account..." : "Create Account"}
           </Button>
           <div className="text-center text-sm pt-2">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline" prefetch={true}>
+            <Link href="/signin" className="text-primary hover:underline" prefetch={true}>
               Sign in
             </Link>
           </div>

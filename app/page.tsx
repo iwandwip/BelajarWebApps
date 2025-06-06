@@ -1,8 +1,37 @@
+"use client"
+
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function Home() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      if (session.user.role === "ADMIN") {
+        router.push("/admin/dashboard")
+      } else if (session.user.role === "CUSTOMER" && session.user.status === "ACTIVE") {
+        router.push("/customer/dashboard")
+      }
+    }
+  }, [session, status, router])
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
@@ -20,7 +49,7 @@ export default function Home() {
             
             <div className="space-y-4">
               <Button asChild className="w-full h-11">
-                <Link href="/login" prefetch={true}>
+                <Link href="/signin" prefetch={true}>
                   Sign In to Your Account
                 </Link>
               </Button>
