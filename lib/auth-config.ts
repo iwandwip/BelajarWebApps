@@ -82,7 +82,7 @@ export const authOptions: NextAuthOptions = {
           })
           if (customer) {
             token.waterQuota = customer.waterQuota
-            token.customerNo = customer.customerNo
+            token.customerNo = customer.customerNo || undefined
           }
         } catch {
           

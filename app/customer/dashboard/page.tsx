@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -31,7 +31,7 @@ export default function CustomerDashboard() {
     }
   }, [session?.user?.waterQuota])
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     setIsRefreshing(true)
     try {
       const response = await fetch('/api/auth/session/refresh', {
@@ -48,12 +48,12 @@ export default function CustomerDashboard() {
     } finally {
       setIsRefreshing(false)
     }
-  }
+  }, [update])
 
   useEffect(() => {
     const interval = setInterval(refreshSession, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [refreshSession])
 
   return (
     <div className="space-y-8">

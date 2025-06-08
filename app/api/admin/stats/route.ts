@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/db'
-import { USER_ROLES, USER_STATUS } from '@/lib/constants'
+import { USER_ROLES } from '@/lib/constants'
 
 export async function GET() {
   try {
