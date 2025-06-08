@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,7 +14,74 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
+interface DashboardStats {
+  totalCustomers: number
+  activeNodes: number
+  totalWaterDistributed: number
+  leakAlerts: number
+  pendingUsers: number
+  pendingPayments: number
+}
+
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalCustomers: 0,
+    activeNodes: 3,
+    totalWaterDistributed: 1750,
+    leakAlerts: 0,
+    pendingUsers: 0,
+    pendingPayments: 0
+  })
+  const [loading, setLoading] = useState(true)
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true)
+      const [usersRes, paymentsRes, statsRes] = await Promise.all([
+        fetch('/api/admin/pending-users'),
+        fetch('/api/admin/pending-payments'),
+        fetch('/api/admin/stats')
+      ])
+
+      const usersData = usersRes.ok ? await usersRes.json() : { users: [] }
+      const paymentsData = paymentsRes.ok ? await paymentsRes.json() : { payments: [] }
+      const statsData = statsRes.ok ? await statsRes.json() : {}
+
+      setStats(prev => ({
+        ...prev,
+        totalCustomers: statsData.totalCustomers || 0,
+        pendingUsers: usersData.users?.length || 0,
+        pendingPayments: paymentsData.payments?.length || 0
+      }))
+    } catch {
+      
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchStats()
+    const interval = setInterval(fetchStats, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+        <div className="animate-pulse grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-32 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -30,7 +100,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
+            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
             <p className="text-xs text-muted-foreground">
               +0 from last month
             </p>
@@ -45,7 +115,7 @@ export default function AdminDashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{stats.activeNodes}</div>
             <p className="text-xs text-muted-foreground">
               All systems online
             </p>
@@ -60,7 +130,7 @@ export default function AdminDashboard() {
             <Droplets className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,750L</div>
+            <div className="text-2xl font-bold">{stats.totalWaterDistributed}L</div>
             <p className="text-xs text-muted-foreground">
               +180L from yesterday
             </p>
@@ -75,7 +145,7 @@ export default function AdminDashboard() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{stats.leakAlerts}</div>
             <p className="text-xs text-muted-foreground">
               No active leaks detected
             </p>
@@ -151,7 +221,7 @@ export default function AdminDashboard() {
               <Link href="/admin/approvals">
                 <UserCheck className="mr-2 h-4 w-4" />
                 Pending User Approvals
-                <Badge variant="secondary" className="ml-auto">0</Badge>
+                <Badge variant="secondary" className="ml-auto">{stats.pendingUsers}</Badge>
               </Link>
             </Button>
 
@@ -159,7 +229,7 @@ export default function AdminDashboard() {
               <Link href="/admin/approvals">
                 <CreditCard className="mr-2 h-4 w-4" />
                 Pending Payment Approvals
-                <Badge variant="secondary" className="ml-auto">0</Badge>
+                <Badge variant="secondary" className="ml-auto">{stats.pendingPayments}</Badge>
               </Link>
             </Button>
 

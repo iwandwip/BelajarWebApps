@@ -23,6 +23,7 @@ export default function CustomerTopUpPage() {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const quickAmounts = [
     { amount: 50000, quota: 500 },
@@ -48,11 +49,40 @@ export default function CustomerTopUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setErrorMessage("")
 
-    setTimeout(() => {
-      setSubmitSuccess(true)
+    const amount = selectedAmount || parseInt(customAmount) || 0
+    const quotaRequested = calculateQuota(amount)
+
+    if (!selectedMethod || amount < 10000) {
+      setErrorMessage("Please select payment method and minimum amount Rp 10,000")
       setIsSubmitting(false)
-    }, 2000)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/customer/topup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          quotaRequested,
+          method: selectedMethod
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitSuccess(true)
+      } else {
+        setErrorMessage(data.error || 'Failed to submit top-up request')
+      }
+    } catch {
+      setErrorMessage('Network error. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (submitSuccess) {
@@ -129,6 +159,12 @@ export default function CustomerTopUpPage() {
           </Card>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {errorMessage && (
+              <Alert variant="destructive">
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle>Select Amount</CardTitle>

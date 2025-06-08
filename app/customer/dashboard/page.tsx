@@ -1,6 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -11,24 +12,67 @@ import {
   CreditCard, 
   AlertCircle,
   Activity,
-  Gauge
+  Gauge,
+  RefreshCw
 } from "lucide-react"
 import Link from "next/link"
 
 export default function CustomerDashboard() {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [waterQuota, setWaterQuota] = useState(session?.user?.waterQuota || 0)
 
-  const waterQuota = session?.user?.waterQuota || 0
   const quotaProgress = Math.min((waterQuota / 1000) * 100, 100)
   const isLowQuota = waterQuota < 100
 
+  useEffect(() => {
+    if (session?.user?.waterQuota !== undefined) {
+      setWaterQuota(session.user.waterQuota)
+    }
+  }, [session?.user?.waterQuota])
+
+  const refreshSession = async () => {
+    setIsRefreshing(true)
+    try {
+      const response = await fetch('/api/auth/session/refresh', {
+        method: 'POST'
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setWaterQuota(data.waterQuota)
+        await update({ waterQuota: data.waterQuota })
+      }
+    } catch {
+      
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    const interval = setInterval(refreshSession, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Welcome back, {session?.user?.name} - Customer {session?.user?.customerNo || 'N/A'}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Welcome back, {session?.user?.name} - Customer {session?.user?.customerNo || 'N/A'}
+          </p>
+        </div>
+        <Button 
+          onClick={refreshSession} 
+          variant="outline" 
+          size="sm"
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {isLowQuota && (

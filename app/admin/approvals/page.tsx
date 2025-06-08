@@ -65,8 +65,7 @@ export default function AdminApprovalsPage() {
         const paymentsData = await paymentsRes.json()
         setPendingPayments(paymentsData.payments || [])
       }
-    } catch (error) {
-      console.error('Error fetching data:', error)
+    } catch {
       setMessage({ type: 'error', text: 'Failed to fetch pending approvals' })
     } finally {
       setLoading(false)
@@ -76,6 +75,13 @@ export default function AdminApprovalsPage() {
   useEffect(() => {
     fetchData()
   }, [])
+
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
 
   const handleUserAction = async (userId: string, action: 'approve' | 'reject') => {
     try {
@@ -94,7 +100,7 @@ export default function AdminApprovalsPage() {
       } else {
         setMessage({ type: 'error', text: data.error })
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to process user action' })
     } finally {
       setProcessing(null)
@@ -118,7 +124,7 @@ export default function AdminApprovalsPage() {
       } else {
         setMessage({ type: 'error', text: data.error })
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to process payment action' })
     } finally {
       setProcessing(null)
@@ -230,15 +236,19 @@ export default function AdminApprovalsPage() {
                           <Mail className="h-3 w-3" />
                           <span>{user.email}</span>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <Phone className="h-3 w-3" />
-                          <span>{user.customer?.phone}</span>
+                        {user.customer?.phone && (
+                          <div className="flex items-center space-x-1">
+                            <Phone className="h-3 w-3" />
+                            <span>{user.customer.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                      {user.customer?.address && (
+                        <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate max-w-xs">{user.customer.address}</span>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        <span className="truncate max-w-xs">{user.customer?.address}</span>
-                      </div>
+                      )}
                       <div className="text-xs text-muted-foreground">
                         Registered: {new Date(user.createdAt).toLocaleDateString()}
                       </div>

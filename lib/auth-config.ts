@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
     error: "/signin"
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.role = user.role
         token.status = user.status
@@ -69,6 +69,26 @@ export const authOptions: NextAuthOptions = {
         token.waterQuota = user.waterQuota
         token.customerId = user.customerId
       }
+
+      if (trigger === "update" && session?.waterQuota !== undefined) {
+        token.waterQuota = session.waterQuota
+      }
+
+      if (token.customerId && (trigger === "update" || !token.waterQuota)) {
+        try {
+          const customer = await prisma.customer.findUnique({
+            where: { id: token.customerId as string },
+            select: { waterQuota: true, customerNo: true }
+          })
+          if (customer) {
+            token.waterQuota = customer.waterQuota
+            token.customerNo = customer.customerNo
+          }
+        } catch {
+          
+        }
+      }
+
       return token
     },
     async session({ session, token }) {
