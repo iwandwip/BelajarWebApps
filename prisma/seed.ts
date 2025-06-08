@@ -6,13 +6,13 @@ const prisma = new PrismaClient()
 
 async function main() {
   const adminPassword = await bcrypt.hash('admin123', 10)
-  const customerPassword = await bcrypt.hash('customer123', 10)
+  const customerPassword = await bcrypt.hash('admin123', 10)
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@pdam.com' },
+    where: { email: 'admin@gmail.com' },
     update: {},
     create: {
-      email: 'admin@pdam.com',
+      email: 'admin@gmail.com',
       password: adminPassword,
       name: 'PDAM Administrator',
       role: USER_ROLES.ADMIN,
@@ -22,10 +22,10 @@ async function main() {
   })
 
   const customer1 = await prisma.user.upsert({
-    where: { email: 'budi@gmail.com' },
+    where: { email: 'user1@gmail.com' },
     update: {},
     create: {
-      email: 'budi@gmail.com',
+      email: 'user1@gmail.com',
       password: customerPassword,
       name: 'Budi Santoso',
       role: USER_ROLES.CUSTOMER,
@@ -36,10 +36,10 @@ async function main() {
   })
 
   const customer2 = await prisma.user.upsert({
-    where: { email: 'sari@gmail.com' },
+    where: { email: 'user2@gmail.com' },
     update: {},
     create: {
-      email: 'sari@gmail.com',
+      email: 'user2@gmail.com',
       password: customerPassword,
       name: 'Sari Dewi',
       role: USER_ROLES.CUSTOMER,
@@ -218,9 +218,9 @@ async function main() {
   }
 
   console.log('✅ Database seeded successfully!')
-  console.log('👤 Admin: admin@pdam.com / admin123')
-  console.log('👤 Customer 1: budi@gmail.com / customer123 (PDAM-001)')
-  console.log('👤 Customer 2: sari@gmail.com / customer123 (PDAM-002)')
+  console.log('👤 Admin: admin@gmail.com / admin123')
+  console.log('👤 Customer 1: user1@gmail.com / admin123 (PDAM-001)')
+  console.log('👤 Customer 2: user2@gmail.com / admin123 (PDAM-002)')
 }
 
 main()
