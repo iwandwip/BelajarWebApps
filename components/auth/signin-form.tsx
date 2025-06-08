@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import Image from "next/image"
 
-export function SignInForm() {
+function SignInFormContent() {
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -149,5 +149,42 @@ export function SignInForm() {
         </CardFooter>
       </form>
     </Card>
+  )
+}
+
+function SignInFormFallback() {
+  return (
+    <Card className="w-full">
+      <CardHeader className="space-y-1 text-center">
+        <div className="mx-auto mb-4 w-16 h-16">
+          <Image
+            src="/assets/login.svg"
+            alt="Login"
+            width={64}
+            height={64}
+            className="w-full h-full"
+          />
+        </div>
+        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+        <CardDescription>
+          Loading sign in form...
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-11 bg-gray-200 rounded"></div>
+          <div className="h-11 bg-gray-200 rounded"></div>
+          <div className="h-11 bg-gray-200 rounded"></div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function SignInForm() {
+  return (
+    <Suspense fallback={<SignInFormFallback />}>
+      <SignInFormContent />
+    </Suspense>
   )
 }
