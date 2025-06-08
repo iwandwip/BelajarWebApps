@@ -58,6 +58,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/signin",
+    signOut: "/signin",
     error: "/signin"
   },
   callbacks: {
@@ -101,6 +102,17 @@ export const authOptions: NextAuthOptions = {
         session.user.customerId = token.customerId as string | undefined
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`
+      }
+      
+      if (new URL(url).origin === baseUrl) {
+        return url
+      }
+      
+      return baseUrl
     }
   },
   events: {
@@ -111,6 +123,9 @@ export const authOptions: NextAuthOptions = {
           data: { updatedAt: new Date() }
         })
       }
+    },
+    async signOut() {
+      
     }
   },
   secret: process.env.NEXTAUTH_SECRET,

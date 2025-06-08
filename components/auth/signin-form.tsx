@@ -40,7 +40,11 @@ function SignInFormContent() {
         setErrorMessage("Invalid credentials or account pending approval")
       } else if (result?.ok) {
         const callbackUrl = searchParams.get("callbackUrl")
-        window.location.href = callbackUrl || "/"
+        if (callbackUrl && callbackUrl.startsWith("/")) {
+          window.location.href = callbackUrl
+        } else {
+          window.location.href = "/"
+        }
       }
     } catch {
       setErrorMessage("An unexpected error occurred")

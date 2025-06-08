@@ -6,16 +6,17 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
     const { pathname } = req.nextUrl
+    const baseUrl = new URL(req.url).origin
 
     if (pathname.startsWith('/admin')) {
       if (!token || token.role !== USER_ROLES.ADMIN) {
-        return NextResponse.redirect(new URL('/signin', req.url))
+        return NextResponse.redirect(new URL('/signin', baseUrl))
       }
     }
 
     if (pathname.startsWith('/customer')) {
       if (!token || token.role !== USER_ROLES.CUSTOMER || token.status !== USER_STATUS.ACTIVE) {
-        return NextResponse.redirect(new URL('/signin', req.url))
+        return NextResponse.redirect(new URL('/signin', baseUrl))
       }
     }
 

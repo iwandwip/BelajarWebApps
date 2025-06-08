@@ -18,7 +18,15 @@ export function SignOutButton({
   showIcon = true 
 }: SignOutButtonProps) {
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
+    const currentPort = window.location.port
+    const currentProtocol = window.location.protocol
+    const currentHostname = window.location.hostname
+    const baseUrl = `${currentProtocol}//${currentHostname}${currentPort ? `:${currentPort}` : ''}`
+    
+    signOut({ 
+      callbackUrl: `${baseUrl}/signin`,
+      redirect: true 
+    })
   }
 
   return (
