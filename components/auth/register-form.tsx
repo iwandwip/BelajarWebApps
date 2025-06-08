@@ -11,7 +11,7 @@ import Image from "next/image"
 
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
   const [success, setSuccess] = useState("")
   const [formData, setFormData] = useState({
     fullName: "",
@@ -25,17 +25,17 @@ export function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
+    setErrorMessage("")
     setSuccess("")
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long!")
+      setErrorMessage("Password must be at least 6 characters long!")
       setIsLoading(false)
       return
     }
     
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match!")
+      setErrorMessage("Passwords do not match!")
       setIsLoading(false)
       return
     }
@@ -62,10 +62,10 @@ export function RegisterForm() {
           confirmPassword: "",
         })
       } else {
-        setError(data.error || 'Registration failed')
+        setErrorMessage(data.error || 'Registration failed')
       }
-    } catch (error) {
-      setError('An unexpected error occurred')
+    } catch {
+      setErrorMessage('An unexpected error occurred')
     } finally {
       setIsLoading(false)
     }
@@ -97,9 +97,9 @@ export function RegisterForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-5">
-          {error && (
+          {errorMessage && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           

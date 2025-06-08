@@ -49,9 +49,6 @@ export default function CustomerTopUpPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    const amount = selectedAmount || parseInt(customAmount)
-    const quota = calculateQuota(amount)
-
     setTimeout(() => {
       setSubmitSuccess(true)
       setIsSubmitting(false)

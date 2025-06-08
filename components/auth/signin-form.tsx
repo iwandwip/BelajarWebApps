@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,10 +13,9 @@ import Link from "next/link"
 import Image from "next/image"
 
 export function SignInForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,7 +25,7 @@ export function SignInForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
+    setErrorMessage("")
 
     try {
       const result = await signIn("credentials", {
@@ -37,13 +36,13 @@ export function SignInForm() {
       })
 
       if (result?.error) {
-        setError("Invalid credentials or account pending approval")
+        setErrorMessage("Invalid credentials or account pending approval")
       } else if (result?.ok) {
         const callbackUrl = searchParams.get("callbackUrl")
         window.location.href = callbackUrl || "/"
       }
-    } catch (error) {
-      setError("An unexpected error occurred")
+    } catch {
+      setErrorMessage("An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
@@ -76,9 +75,9 @@ export function SignInForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
-          {error && (
+          {errorMessage && (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           

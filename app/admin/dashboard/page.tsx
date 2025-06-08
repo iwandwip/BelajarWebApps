@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button"
 import { 
   Users, 
   Droplets, 
-  AlertTriangle, 
-  TrendingUp,
+  AlertTriangle,
   Activity,
   UserCheck,
   CreditCard
