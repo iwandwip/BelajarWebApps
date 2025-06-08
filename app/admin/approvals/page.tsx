@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   UserCheck, 
@@ -13,7 +15,8 @@ import {
   MapPin,
   Check,
   X,
-  RefreshCw
+  RefreshCw,
+  AlertCircle
 } from "lucide-react"
 
 interface PendingUser {
@@ -41,12 +44,21 @@ interface PendingPayment {
   }
 }
 
+interface ApprovalState {
+  userId: string
+  customerNo: string
+  isChecking: boolean
+  isAvailable: boolean | null
+  error: string
+}
+
 export default function AdminApprovalsPage() {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
   const [pendingPayments, setPendingPayments] = useState<PendingPayment[]>([])
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [approvalStates, setApprovalStates] = useState<Record<string, ApprovalState>>({})
 
   const fetchData = async () => {
     try {
@@ -83,13 +95,93 @@ export default function AdminApprovalsPage() {
     }
   }, [message])
 
+  const checkCustomerNo = async (userId: string, customerNo: string) => {
+    if (!customerNo.trim()) {
+      setApprovalStates(prev => ({
+        ...prev,
+        [userId]: { ...prev[userId], isAvailable: null, error: '' }
+      }))
+      return
+    }
+
+    setApprovalStates(prev => ({
+      ...prev,
+      [userId]: { ...prev[userId], isChecking: true, error: '' }
+    }))
+
+    try {
+      const response = await fetch('/api/admin/check-customer-no', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerNo: customerNo.trim() })
+      })
+
+      const data = await response.json()
+
+      setApprovalStates(prev => ({
+        ...prev,
+        [userId]: {
+          ...prev[userId],
+          isChecking: false,
+          isAvailable: data.available,
+          error: data.available ? '' : data.message || 'Customer number not available'
+        }
+      }))
+    } catch {
+      setApprovalStates(prev => ({
+        ...prev,
+        [userId]: {
+          ...prev[userId],
+          isChecking: false,
+          isAvailable: false,
+          error: 'Failed to check customer number'
+        }
+      }))
+    }
+  }
+
+  const handleCustomerNoChange = (userId: string, value: string) => {
+    setApprovalStates(prev => ({
+      ...prev,
+      [userId]: {
+        userId,
+        customerNo: value,
+        isChecking: false,
+        isAvailable: null,
+        error: ''
+      }
+    }))
+
+    const debounceTimer = setTimeout(() => {
+      checkCustomerNo(userId, value)
+    }, 500)
+
+    return () => clearTimeout(debounceTimer)
+  }
+
   const handleUserAction = async (userId: string, action: 'approve' | 'reject') => {
+    if (action === 'approve') {
+      const state = approvalStates[userId]
+      if (!state?.customerNo?.trim()) {
+        setMessage({ type: 'error', text: 'Customer number is required' })
+        return
+      }
+      if (state.isAvailable === false) {
+        setMessage({ type: 'error', text: 'Customer number is not available' })
+        return
+      }
+    }
+
     try {
       setProcessing(userId)
       const response = await fetch('/api/admin/pending-users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action })
+        body: JSON.stringify({ 
+          userId, 
+          action,
+          customerNo: action === 'approve' ? approvalStates[userId]?.customerNo : undefined
+        })
       })
 
       const data = await response.json()
@@ -97,6 +189,11 @@ export default function AdminApprovalsPage() {
       if (response.ok) {
         setMessage({ type: 'success', text: data.message })
         setPendingUsers(prev => prev.filter(user => user.id !== userId))
+        setApprovalStates(prev => {
+          const newState = { ...prev }
+          delete newState[userId]
+          return newState
+        })
       } else {
         setMessage({ type: 'error', text: data.error })
       }
@@ -206,7 +303,7 @@ export default function AdminApprovalsPage() {
             <span>User Registration Approvals</span>
           </CardTitle>
           <CardDescription>
-            Review new customer registrations before activating their accounts
+            Review new customer registrations and assign customer numbers
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -219,65 +316,110 @@ export default function AdminApprovalsPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {pendingUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <UserCheck className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-medium">{user.name}</h3>
-                        <Badge variant="outline">PENDING</Badge>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <Mail className="h-3 w-3" />
-                          <span>{user.email}</span>
+            <div className="space-y-6">
+              {pendingUsers.map((user) => {
+                const state = approvalStates[user.id] || { userId: user.id, customerNo: '', isChecking: false, isAvailable: null, error: '' }
+                
+                return (
+                  <div key={user.id} className="p-6 border rounded-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <UserCheck className="h-6 w-6 text-primary" />
                         </div>
-                        {user.customer?.phone && (
-                          <div className="flex items-center space-x-1">
-                            <Phone className="h-3 w-3" />
-                            <span>{user.customer.phone}</span>
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-medium">{user.name}</h3>
+                            <Badge variant="outline">PENDING</Badge>
                           </div>
+                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Mail className="h-3 w-3" />
+                              <span>{user.email}</span>
+                            </div>
+                            {user.customer?.phone && (
+                              <div className="flex items-center space-x-1">
+                                <Phone className="h-3 w-3" />
+                                <span>{user.customer.phone}</span>
+                              </div>
+                            )}
+                          </div>
+                          {user.customer?.address && (
+                            <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                              <MapPin className="h-3 w-3" />
+                              <span className="truncate max-w-xs">{user.customer.address}</span>
+                            </div>
+                          )}
+                          <div className="text-xs text-muted-foreground">
+                            Registered: {new Date(user.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor={`customerNo-${user.id}`}>Customer Number *</Label>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            id={`customerNo-${user.id}`}
+                            placeholder="e.g., PDAM-001"
+                            value={state.customerNo}
+                            onChange={(e) => handleCustomerNoChange(user.id, e.target.value)}
+                            className={`${
+                              state.isAvailable === false ? 'border-red-500' : 
+                              state.isAvailable === true ? 'border-green-500' : ''
+                            }`}
+                          />
+                          {state.isChecking && (
+                            <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                          )}
+                          {state.isAvailable === true && (
+                            <Check className="h-4 w-4 text-green-600" />
+                          )}
+                          {state.isAvailable === false && (
+                            <AlertCircle className="h-4 w-4 text-red-600" />
+                          )}
+                        </div>
+                        {state.error && (
+                          <p className="text-sm text-red-600">{state.error}</p>
+                        )}
+                        {state.isAvailable === true && (
+                          <p className="text-sm text-green-600">Customer number is available</p>
                         )}
                       </div>
-                      {user.customer?.address && (
-                        <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          <span className="truncate max-w-xs">{user.customer.address}</span>
-                        </div>
-                      )}
-                      <div className="text-xs text-muted-foreground">
-                        Registered: {new Date(user.createdAt).toLocaleDateString()}
+
+                      <div className="flex items-center space-x-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-green-600 border-green-600 hover:bg-green-50"
+                          onClick={() => handleUserAction(user.id, 'approve')}
+                          disabled={
+                            processing === user.id || 
+                            !state.customerNo.trim() || 
+                            state.isAvailable === false ||
+                            state.isChecking
+                          }
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          {processing === user.id ? 'Processing...' : 'Approve'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-red-600 border-red-600 hover:bg-red-50"
+                          onClick={() => handleUserAction(user.id, 'reject')}
+                          disabled={processing === user.id}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-green-600 border-green-600 hover:bg-green-50"
-                      onClick={() => handleUserAction(user.id, 'approve')}
-                      disabled={processing === user.id}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      {processing === user.id ? 'Processing...' : 'Approve'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-red-600 border-red-600 hover:bg-red-50"
-                      onClick={() => handleUserAction(user.id, 'reject')}
-                      disabled={processing === user.id}
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </CardContent>

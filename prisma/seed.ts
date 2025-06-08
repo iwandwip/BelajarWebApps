@@ -49,6 +49,18 @@ async function main() {
     },
   })
 
+  const pendingCustomer = await prisma.user.upsert({
+    where: { email: 'pending@gmail.com' },
+    update: {},
+    create: {
+      email: 'pending@gmail.com',
+      password: customerPassword,
+      name: 'John Doe',
+      role: USER_ROLES.CUSTOMER,
+      status: USER_STATUS.PENDING,
+    },
+  })
+
   const customerData1 = await prisma.customer.upsert({
     where: { userId: customer1.id },
     update: {},
@@ -72,6 +84,19 @@ async function main() {
       phone: '08987654321',
       waterQuota: 750.0,
       isActive: true,
+    },
+  })
+
+  await prisma.customer.upsert({
+    where: { userId: pendingCustomer.id },
+    update: {},
+    create: {
+      userId: pendingCustomer.id,
+      customerNo: null,
+      address: 'Jl. Diponegoro No. 789, Malang',
+      phone: '08555666777',
+      waterQuota: 0.0,
+      isActive: false,
     },
   })
 
@@ -221,6 +246,7 @@ async function main() {
   console.log('👤 Admin: admin@gmail.com / admin123')
   console.log('👤 Customer 1: user1@gmail.com / admin123 (PDAM-001)')
   console.log('👤 Customer 2: user2@gmail.com / admin123 (PDAM-002)')
+  console.log('👤 Pending Customer: pending@gmail.com / admin123 (Awaiting approval)')
 }
 
 main()

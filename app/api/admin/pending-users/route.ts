@@ -40,15 +40,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { userId, action } = await request.json()
+    const { userId, action, customerNo } = await request.json()
 
     if (!userId || !action || !['approve', 'reject'].includes(action)) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
     if (action === 'approve') {
-      const customerCount = await prisma.customer.count()
-      const customerNo = `PDAM-${String(customerCount + 1).padStart(3, '0')}`
+      if (!customerNo || customerNo.trim() === '') {
+        return NextResponse.json({ error: 'Customer number is required' }, { status: 400 })
+      }
+
+      const existingCustomer = await prisma.customer.findUnique({
+        where: { customerNo: customerNo.trim() }
+      })
+
+      if (existingCustomer) {
+        return NextResponse.json({ error: 'Customer number already exists' }, { status: 400 })
+      }
 
       await prisma.user.update({
         where: { id: userId },
@@ -62,7 +71,7 @@ export async function POST(request: NextRequest) {
       await prisma.customer.update({
         where: { userId },
         data: {
-          customerNo,
+          customerNo: customerNo.trim(),
           isActive: true
         }
       })
