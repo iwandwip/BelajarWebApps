@@ -1,8 +1,10 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   UserCheck, 
   CreditCard, 
@@ -10,22 +12,154 @@ import {
   Phone, 
   MapPin,
   Check,
-  X
+  X,
+  RefreshCw
 } from "lucide-react"
-import { PendingUser, PendingPayment } from "@/types/admin"
+
+interface PendingUser {
+  id: string
+  name: string
+  email: string
+  createdAt: string
+  customer?: {
+    phone: string
+    address: string
+  }
+}
+
+interface PendingPayment {
+  id: string
+  amount: number
+  quotaRequested: number
+  method: string
+  createdAt: string
+  customer: {
+    customerNo: string
+    user: {
+      name: string
+    }
+  }
+}
 
 export default function AdminApprovalsPage() {
-  const pendingUsers: PendingUser[] = []
-  const pendingPayments: PendingPayment[] = []
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
+  const [pendingPayments, setPendingPayments] = useState<PendingPayment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [processing, setProcessing] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const [usersRes, paymentsRes] = await Promise.all([
+        fetch('/api/admin/pending-users'),
+        fetch('/api/admin/pending-payments')
+      ])
+
+      if (usersRes.ok) {
+        const usersData = await usersRes.json()
+        setPendingUsers(usersData.users || [])
+      }
+
+      if (paymentsRes.ok) {
+        const paymentsData = await paymentsRes.json()
+        setPendingPayments(paymentsData.payments || [])
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      setMessage({ type: 'error', text: 'Failed to fetch pending approvals' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const handleUserAction = async (userId: string, action: 'approve' | 'reject') => {
+    try {
+      setProcessing(userId)
+      const response = await fetch('/api/admin/pending-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: data.message })
+        setPendingUsers(prev => prev.filter(user => user.id !== userId))
+      } else {
+        setMessage({ type: 'error', text: data.error })
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to process user action' })
+    } finally {
+      setProcessing(null)
+    }
+  }
+
+  const handlePaymentAction = async (paymentId: string, action: 'approve' | 'reject') => {
+    try {
+      setProcessing(paymentId)
+      const response = await fetch('/api/admin/pending-payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId, action })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: data.message })
+        setPendingPayments(prev => prev.filter(payment => payment.id !== paymentId))
+      } else {
+        setMessage({ type: 'error', text: data.error })
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to process payment action' })
+    } finally {
+      setProcessing(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Pending Approvals</h2>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Pending Approvals</h2>
-        <p className="text-muted-foreground">
-          Review and approve user registrations and payment requests
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Pending Approvals</h2>
+          <p className="text-muted-foreground">
+            Review and approve user registrations and payment requests
+          </p>
+        </div>
+        <Button onClick={fetchData} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </div>
+
+      {message && (
+        <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
+          <AlertDescription>{message.text}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -36,7 +170,7 @@ export default function AdminApprovalsPage() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{pendingUsers.length}</div>
             <p className="text-xs text-muted-foreground">
               New user registrations
             </p>
@@ -51,7 +185,7 @@ export default function AdminApprovalsPage() {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{pendingPayments.length}</div>
             <p className="text-xs text-muted-foreground">
               Top-up requests
             </p>
@@ -105,14 +239,29 @@ export default function AdminApprovalsPage() {
                         <MapPin className="h-3 w-3" />
                         <span className="truncate max-w-xs">{user.customer?.address}</span>
                       </div>
+                      <div className="text-xs text-muted-foreground">
+                        Registered: {new Date(user.createdAt).toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 border-green-600 hover:bg-green-50">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-green-600 border-green-600 hover:bg-green-50"
+                      onClick={() => handleUserAction(user.id, 'approve')}
+                      disabled={processing === user.id}
+                    >
                       <Check className="h-4 w-4 mr-1" />
-                      Approve
+                      {processing === user.id ? 'Processing...' : 'Approve'}
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 border-red-600 hover:bg-red-50">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 border-red-600 hover:bg-red-50"
+                      onClick={() => handleUserAction(user.id, 'reject')}
+                      disabled={processing === user.id}
+                    >
                       <X className="h-4 w-4 mr-1" />
                       Reject
                     </Button>
@@ -168,11 +317,23 @@ export default function AdminApprovalsPage() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" className="text-green-600 border-green-600 hover:bg-green-50">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-green-600 border-green-600 hover:bg-green-50"
+                      onClick={() => handlePaymentAction(payment.id, 'approve')}
+                      disabled={processing === payment.id}
+                    >
                       <Check className="h-4 w-4 mr-1" />
-                      Approve
+                      {processing === payment.id ? 'Processing...' : 'Approve'}
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 border-red-600 hover:bg-red-50">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 border-red-600 hover:bg-red-50"
+                      onClick={() => handlePaymentAction(payment.id, 'reject')}
+                      disabled={processing === payment.id}
+                    >
                       <X className="h-4 w-4 mr-1" />
                       Reject
                     </Button>
