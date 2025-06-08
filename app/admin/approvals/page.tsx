@@ -12,10 +12,11 @@ import {
   Check,
   X
 } from "lucide-react"
+import { PendingUser, PendingPayment } from "@/types/admin"
 
 export default function AdminApprovalsPage() {
-  const pendingUsers = []
-  const pendingPayments = []
+  const pendingUsers: PendingUser[] = []
+  const pendingPayments: PendingPayment[] = []
 
   return (
     <div className="space-y-8">
@@ -79,7 +80,7 @@ export default function AdminApprovalsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {pendingUsers.map((user: any) => (
+              {pendingUsers.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -144,7 +145,7 @@ export default function AdminApprovalsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {pendingPayments.map((payment: any) => (
+              {pendingPayments.map((payment) => (
                 <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">

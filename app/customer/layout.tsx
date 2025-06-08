@@ -47,7 +47,7 @@ export default function CustomerLayout({
                 PDAM Customer Portal
               </h1>
               <Badge variant="outline">
-                {session.user.customerNo}
+                {session.user.customerNo || 'N/A'}
               </Badge>
             </div>
             <div className="flex items-center space-x-4">

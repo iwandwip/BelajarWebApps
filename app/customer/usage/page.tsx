@@ -11,11 +11,12 @@ import {
   TrendingUp,
   BarChart3
 } from "lucide-react"
+import { DailyUsage, MonthlyUsage } from "@/types/admin"
 
 export default function CustomerUsagePage() {
   const { data: session } = useSession()
 
-  const dailyUsage = [
+  const dailyUsage: DailyUsage[] = [
     { date: "2025-06-01", usage: 52, cost: 5200 },
     { date: "2025-06-02", usage: 48, cost: 4800 },
     { date: "2025-06-03", usage: 55, cost: 5500 },
@@ -25,7 +26,7 @@ export default function CustomerUsagePage() {
     { date: "2025-06-07", usage: 35, cost: 3500 }
   ]
 
-  const monthlyUsage = [
+  const monthlyUsage: MonthlyUsage[] = [
     { month: "Jan 2025", usage: 1450, cost: 145000 },
     { month: "Feb 2025", usage: 1320, cost: 132000 },
     { month: "Mar 2025", usage: 1580, cost: 158000 },

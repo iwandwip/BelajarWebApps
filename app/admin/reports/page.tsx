@@ -11,9 +11,10 @@ import {
   AlertTriangle,
   TrendingUp
 } from "lucide-react"
+import { Report, MonthlyStats } from "@/types/admin"
 
 export default function AdminReportsPage() {
-  const reports = [
+  const reports: Report[] = [
     {
       title: "Daily Usage Report",
       description: "Water consumption patterns by customer",
@@ -44,7 +45,7 @@ export default function AdminReportsPage() {
     }
   ]
 
-  const monthlyStats = [
+  const monthlyStats: MonthlyStats[] = [
     { month: "Jan 2025", usage: 8500, customers: 2, leaks: 0 },
     { month: "Feb 2025", usage: 9200, customers: 2, leaks: 0 },
     { month: "Mar 2025", usage: 8800, customers: 2, leaks: 1 },

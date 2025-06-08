@@ -42,9 +42,9 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           status: user.status,
-          customerNo: user.customer?.customerNo,
-          waterQuota: user.customer?.waterQuota,
-          customerId: user.customer?.id
+          customerNo: user.customer?.customerNo || undefined,
+          waterQuota: user.customer?.waterQuota || undefined,
+          customerId: user.customer?.id || undefined
         }
       }
     })
@@ -72,22 +72,22 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.sub!
         session.user.role = token.role as string
         session.user.status = token.status as string
-        session.user.customerNo = token.customerNo as string
-        session.user.waterQuota = token.waterQuota as number
-        session.user.customerId = token.customerId as string
+        session.user.customerNo = token.customerNo as string | undefined
+        session.user.waterQuota = token.waterQuota as number | undefined
+        session.user.customerId = token.customerId as string | undefined
       }
       return session
     }
   },
   events: {
     async signIn({ user }) {
-      if (user.role === 'CUSTOMER') {
+      if (user.role === 'CUSTOMER' && user.customerId) {
         await prisma.customer.update({
-          where: { userId: user.id },
+          where: { id: user.customerId },
           data: { updatedAt: new Date() }
         })
       }

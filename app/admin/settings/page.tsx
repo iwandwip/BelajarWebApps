@@ -13,9 +13,10 @@ import {
   Droplets,
   Activity
 } from "lucide-react"
+import { SystemSetting } from "@/types/admin"
 
 export default function AdminSettingsPage() {
-  const systemSettings = [
+  const systemSettings: SystemSetting[] = [
     {
       key: "leak_flow_threshold_percent",
       label: "Leak Detection Flow Threshold",

@@ -10,9 +10,10 @@ import {
   CheckCircle,
   Radio
 } from "lucide-react"
+import { SensorNode, LeakDetection } from "@/types/admin"
 
 export default function AdminMonitoringPage() {
-  const sensorData = [
+  const sensorData: SensorNode[] = [
     {
       nodeId: "DIST-001",
       location: "Main Distribution Pipe - Central",
@@ -44,7 +45,7 @@ export default function AdminMonitoringPage() {
     }
   ]
 
-  const leakDetection = {
+  const leakDetection: LeakDetection = {
     distributorFlow: 15.5,
     customerTotalFlow: 26.7,
     flowDifference: -11.2,

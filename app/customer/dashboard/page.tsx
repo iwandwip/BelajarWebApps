@@ -27,7 +27,7 @@ export default function CustomerDashboard() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">
-          Welcome back, {session?.user?.name} - Customer {session?.user?.customerNo}
+          Welcome back, {session?.user?.name} - Customer {session?.user?.customerNo || 'N/A'}
         </p>
       </div>
 
@@ -188,7 +188,7 @@ export default function CustomerDashboard() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex justify-between">
                   <span>Customer No:</span>
-                  <Badge variant="outline">{session?.user?.customerNo}</Badge>
+                  <Badge variant="outline">{session?.user?.customerNo || 'N/A'}</Badge>
                 </div>
                 <div className="flex justify-between">
                   <span>Account Status:</span>

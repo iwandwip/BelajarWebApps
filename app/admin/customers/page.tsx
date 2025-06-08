@@ -11,9 +11,10 @@ import {
   Eye,
   Edit
 } from "lucide-react"
+import { Customer } from "@/types/admin"
 
 export default function AdminCustomersPage() {
-  const customers = [
+  const customers: Customer[] = [
     {
       id: "1",
       customerNo: "PDAM-001",
