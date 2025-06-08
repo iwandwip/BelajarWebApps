@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { PasswordInput } from "@/components/ui/password-input"
 import { 
   User, 
   Mail, 
@@ -49,6 +50,28 @@ export default function CustomerProfilePage() {
       setSaving(false)
       setSaveSuccess(true)
       setIsEditing(false)
+      
+      setTimeout(() => setSaveSuccess(false), 3000)
+    }, 1500)
+  }
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (formData.newPassword !== formData.confirmPassword) {
+      alert("Passwords don't match!")
+      return
+    }
+    setSaving(true)
+    
+    setTimeout(() => {
+      setSaving(false)
+      setSaveSuccess(true)
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      }))
       
       setTimeout(() => setSaveSuccess(false), 3000)
     }, 1500)
@@ -168,13 +191,12 @@ export default function CustomerProfilePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4">
+              <form onSubmit={handlePasswordUpdate} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input
+                  <PasswordInput
                     id="currentPassword"
                     name="currentPassword"
-                    type="password"
                     value={formData.currentPassword}
                     onChange={handleInputChange}
                     placeholder="Enter current password"
@@ -183,10 +205,9 @@ export default function CustomerProfilePage() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input
+                  <PasswordInput
                     id="newPassword"
                     name="newPassword"
-                    type="password"
                     value={formData.newPassword}
                     onChange={handleInputChange}
                     placeholder="Enter new password"
@@ -195,19 +216,24 @@ export default function CustomerProfilePage() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
                     name="confirmPassword"
-                    type="password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="Confirm new password"
                   />
                 </div>
 
-                <Button type="submit" variant="outline">
-                  <Save className="mr-2 h-4 w-4" />
-                  Update Password
+                <Button type="submit" variant="outline" disabled={isSaving}>
+                  {isSaving ? (
+                    "Updating..."
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Update Password
+                    </>
+                  )}
                 </Button>
               </form>
             </CardContent>
@@ -252,7 +278,7 @@ export default function CustomerProfilePage() {
               <div className="text-center p-3 border rounded-lg">
                 <Droplets className="mx-auto h-6 w-6 text-blue-500 mb-1" />
                 <div className="text-lg font-semibold">35L</div>
-                <p className="text-xs text-muted-foreground">Today's Usage</p>
+                <p className="text-xs text-muted-foreground">Today&apos;s Usage</p>
               </div>
               
               <div className="text-center p-3 border rounded-lg">

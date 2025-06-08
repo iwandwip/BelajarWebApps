@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
@@ -143,13 +144,16 @@ export function RegisterForm() {
               id="phone"
               name="phone"
               type="tel"
-              placeholder="Enter your phone number"
+              placeholder="Enter your phone number (08123456789)"
               value={formData.phone}
               onChange={handleChange}
               required
               className="h-11"
               disabled={isLoading}
             />
+            <p className="text-xs text-muted-foreground">
+              Phone number should be 8-15 characters (e.g., 08123456789)
+            </p>
           </div>
           <div className="space-y-3">
             <Label htmlFor="address">Address</Label>
@@ -167,31 +171,27 @@ export function RegisterForm() {
           </div>
           <div className="space-y-3">
             <Label htmlFor="password">Password</Label>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               placeholder="Create a password"
               value={formData.password}
               onChange={handleChange}
               required
               className="h-11"
-              minLength={6}
               disabled={isLoading}
             />
           </div>
           <div className="space-y-3">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
               placeholder="Confirm your password"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
               className="h-11"
-              minLength={6}
               disabled={isLoading}
             />
           </div>
